@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function TaskColumn({ title, tasks, updateTask }) {
+export default function TaskColumn({ title, tasks, updateTask, deleteTask }) {
   return (
     <div>
       <h2 className="text-xl font-semibold mb-2">{title}</h2>
@@ -18,6 +18,7 @@ export default function TaskColumn({ title, tasks, updateTask }) {
               <option value="inprogress">In Progress</option>
               <option value="done">Completed</option>
             </select>
+            <button onClick={() => deleteTask(task.id)} className="btn btn-sm btn-error mt-2">Delete</button>
           </div>
         ))}
       </div>

@@ -1,12 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
-export function Journal() {
+export  default function Journal() {
   const [entry, setEntry] = useState("");
   const [entries, setEntries] = useState([]);
 
-  const handleSave = () => {
+  useEffect(() => {
+    axios.get("http://localhost:5000/api/journals").then(res => setEntries(res.data));
+  }, []);
+
+  const handleSave = async () => {
     if (!entry.trim()) return;
-    setEntries([...entries, { date: new Date().toLocaleDateString(), content: entry }]);
+    const res = await axios.post("http://localhost:5000/api/journals", { content: entry });
+    setEntries([...entries, res.data]);
     setEntry("");
   };
 

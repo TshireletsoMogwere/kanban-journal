@@ -7,7 +7,7 @@ export default function TaskForm({ addTask }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!title || !due) return;
-    addTask({ id: Date.now(), title, due, status: "todo" });
+    addTask({ title, due, status: "todo" });
     setTitle("");
     setDue("");
   };

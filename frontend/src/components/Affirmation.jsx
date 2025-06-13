@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-export function Affirmation() {
+export default function Affirmation() {
   const [quote, setQuote] = useState("");
 
   useEffect(() => {
