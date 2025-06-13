@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState, useEffect} from "react";
 
 const affirmations = [
   "I am growing every day in my career and mindset.",
@@ -16,8 +16,9 @@ export default function Affirmation() {
   }, []);
 
   return (
-    <div className="alert alert-info shadow-lg mb-4">
+    <div className="alert alert-info shadow-lg mb-4 bg-red">
       <span>{affirmation}</span>
+      
     </div>
   );
 }
