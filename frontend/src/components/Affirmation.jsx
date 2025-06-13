@@ -1,24 +1,16 @@
-import React, {useState, useEffect} from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
-const affirmations = [
-  "I am growing every day in my career and mindset.",
-  "Challenges are opportunities for growth.",
-  "My efforts are building a better future.",
-  "Every step I take brings me closer to my goals.",
-];
+export function Affirmation() {
+  const [quote, setQuote] = useState("");
 
-export default function Affirmation() {
-    const [affirmation, setAffirmation] = useState("");
-
-   useEffect(() => {
-    const index = new Date().getDate() % affirmations.length;
-    setAffirmation(affirmations[index]);
+  useEffect(() => {
+    axios.get("http://localhost:5000/api/quote").then((res) => setQuote(res.data.quote));
   }, []);
 
   return (
-    <div className="alert alert-info shadow-lg mb-4 bg-red">
-      <span>{affirmation}</span>
-      
+    <div className="alert alert-info shadow-lg mb-4">
+      <span>{quote}</span>
     </div>
   );
 }
