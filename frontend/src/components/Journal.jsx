@@ -6,7 +6,9 @@ export  default function Journal() {
   const [entries, setEntries] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/journals").then(res => setEntries(res.data));
+    axios.get("http://localhost:5000/api/journals").then((res) => {
+      setEntries(res.data)
+    });
   }, []);
 
   const handleSave = async () => {
