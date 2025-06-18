@@ -1,21 +1,57 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 
-export  default function Journal() {
+export default function Journal() {
   const [entry, setEntry] = useState("");
   const [entries, setEntries] = useState([]);
 
+  // Fetch journal entries on mount
   useEffect(() => {
-    axios.get("http://localhost:5000/api/journals").then((res) => {
-      setEntries(res.data)
-    });
+    const fetchEntries = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/journals", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch journal entries");
+        }
+
+        const data = await res.json();
+        setEntries(data);
+      } catch (err) {
+        console.error("Fetch error:", err.message);
+      }
+    };
+
+    fetchEntries();
   }, []);
 
+  // Handle saving a new entry
   const handleSave = async () => {
     if (!entry.trim()) return;
-    const res = await axios.post("http://localhost:5000/api/journals", { content: entry });
-    setEntries([...entries, res.data]);
-    setEntry("");
+
+    try {
+      const res = await fetch("http://localhost:5000/api/journals", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({ content: entry }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to save journal entry");
+      }
+
+      const savedEntry = await res.json();
+      setEntries([...entries, savedEntry]);
+      setEntry("");
+    } catch (err) {
+      console.error("Save error:", err.message);
+    }
   };
 
   return (
@@ -29,10 +65,11 @@ export  default function Journal() {
         placeholder="Reflect on your day, growth, and areas to improve..."
       ></textarea>
       <button className="btn btn-secondary mb-4" onClick={handleSave}>Save Entry</button>
+
       <div className="space-y-2">
-        {entries.map((e, i) => (
-          <div key={i} className="border p-2 rounded">
-            <p className="text-sm text-gray-500">{e.date}</p>
+        {entries.map((e) => (
+          <div key={e.id || e._id || e.date} className="border p-2 rounded">
+            <p className="text-sm text-gray-500">{new Date(e.date).toLocaleString()}</p>
             <p>{e.content}</p>
           </div>
         ))}

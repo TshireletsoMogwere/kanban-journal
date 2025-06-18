@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { CheckCircle, Calendar, Target, BookOpen, Users, ArrowRight } from 'lucide-react';
-import { useNavigate } from "react-router-dom";
+import { CheckCircle, Calendar, Target, BookOpen, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function KanbanJournalLanding() {
-      const navigate = useNavigate();
+  const navigate = useNavigate();
+
   const [showLogin, setShowLogin] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
@@ -12,8 +13,10 @@ export default function KanbanJournalLanding() {
     confirmPassword: '',
     name: ''
   });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -24,51 +27,53 @@ export default function KanbanJournalLanding() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+    setLoading(true);
 
-    // Basic validation
-    if (!isLogin && formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+    const { email, password, confirmPassword, name } = formData;
+
+    // Basic frontend validation
+    if (!email || !password || (!isLogin && !name)) {
+      setError('Please fill in all required fields.');
+      setLoading(false);
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address.');
+      setLoading(false);
+      return;
+    }
+
+    if (!isLogin && password !== confirmPassword) {
+      setError('Passwords do not match.');
       setLoading(false);
       return;
     }
 
     try {
-      const endpoint = isLogin ? 'http://localhost:5000/api/login' : 'http://localhost:5000/api/register';
-      const payload = isLogin 
-        ? { email: formData.email, password: formData.password }
-        : { 
-            name: formData.name, 
-            email: formData.email, 
-            password: formData.password 
-          };
+      const endpoint = isLogin ? 'http://localhost:5000/api/auth/login' : 'http://localhost:5000/api/auth/register';
+      const payload = isLogin
+        ? { email, password }
+        : { name, email, password };
 
       const response = await fetch(endpoint, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
       });
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Something went wrong');
-      }
+      if (!response.ok) throw new Error(data.message || 'Something went wrong.');
 
-      // Handle successful login/registration
       if (isLogin) {
-        // Store token and redirect to dashboard
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        navigate("/taskboard")
-        console.log('Login successful');
+        navigate('/taskboard');
       } else {
-        // Registration successful, show success message or auto-login
-        console.log('Registration successful');
-        setIsLogin(true); // Switch to login form
+        setIsLogin(true);
         setFormData({ email: '', password: '', confirmPassword: '', name: '' });
       }
     } catch (err) {
@@ -114,15 +119,19 @@ export default function KanbanJournalLanding() {
             </p>
           </div>
 
-          <div className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+              <div
+                className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md"
+                aria-live="polite"
+              >
                 {error}
               </div>
             )}
+
             {!isLogin && (
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
                   Full Name
                 </label>
                 <input
@@ -131,14 +140,14 @@ export default function KanbanJournalLanding() {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required={!isLogin}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 />
               </div>
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                 Email Address
               </label>
               <input
@@ -147,56 +156,68 @@ export default function KanbanJournalLanding() {
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
               />
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="relative">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                 Password
               </label>
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 id="password"
                 name="password"
                 value={formData.password}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md pr-10"
               />
+              <div
+                className="absolute right-3 top-9 cursor-pointer text-gray-500"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </div>
             </div>
 
             {!isLogin && (
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
                   Confirm Password
                 </label>
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   id="confirmPassword"
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required={!isLogin}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 />
               </div>
             )}
 
             <button
-              type="button"
-              onClick={handleSubmit}
+              type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200 disabled:opacity-50"
             >
-              {loading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Create Account')}
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="animate-spin rounded-full h-4 w-4 border-t-2 border-white border-opacity-50" />
+                  Loading...
+                </span>
+              ) : (
+                isLogin ? 'Sign In' : 'Create Account'
+              )}
             </button>
-          </div>
+          </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              {isLogin ? "Don't have an account? " : "Already have an account? "}
+              {isLogin ? "Don't have an account?" : "Already have an account?"}{' '}
               <button
                 onClick={() => setIsLogin(!isLogin)}
                 className="text-blue-600 hover:text-blue-800 font-medium"
@@ -219,9 +240,9 @@ export default function KanbanJournalLanding() {
     );
   }
 
+  // Landing page view
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
       <header className="container mx-auto px-4 py-6">
         <nav className="flex justify-between items-center">
           <div className="flex items-center space-x-2">
@@ -232,14 +253,13 @@ export default function KanbanJournalLanding() {
           </div>
           <button
             onClick={() => setShowLogin(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-200"
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
           >
             Sign In
           </button>
         </nav>
       </header>
 
-      {/* Hero Section */}
       <main className="container mx-auto px-4 py-12">
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
@@ -256,72 +276,56 @@ export default function KanbanJournalLanding() {
                 setShowLogin(true);
                 setIsLogin(false);
               }}
-              className="bg-blue-600 text-white px-8 py-3 rounded-md hover:bg-blue-700 transition duration-200 flex items-center justify-center space-x-2"
+              className="bg-blue-600 text-white px-8 py-3 rounded-md hover:bg-blue-700 flex items-center justify-center gap-2"
             >
               <span>Get Started Free</span>
               <ArrowRight className="w-5 h-5" />
             </button>
             <button
               onClick={() => setShowLogin(true)}
-              className="border-2 border-blue-600 text-blue-600 px-8 py-3 rounded-md hover:bg-blue-600 hover:text-white transition duration-200"
+              className="border-2 border-blue-600 text-blue-600 px-8 py-3 rounded-md hover:bg-blue-600 hover:text-white"
             >
               Sign In
             </button>
           </div>
         </div>
 
-        {/* Features Grid */}
+        {/* Feature grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
           {features.map((feature, index) => (
-            <div key={index} className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-200">
-              <div className="text-blue-600 mb-4">
-                {feature.icon}
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {feature.title}
-              </h3>
-              <p className="text-gray-600 text-sm">
-                {feature.description}
-              </p>
+            <div key={index} className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition">
+              <div className="text-blue-600 mb-4">{feature.icon}</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
+              <p className="text-gray-600 text-sm">{feature.description}</p>
             </div>
           ))}
         </div>
 
-        {/* How It Works */}
+        {/* How it works */}
         <div className="bg-white rounded-lg shadow-lg p-8 mb-16">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
             How Kanban Journal Works
           </h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-blue-600 font-bold">1</span>
+          <div className="grid md:grid-cols-3 gap-8 text-center">
+            {['Start Your Day', 'Organize Tasks', 'Reflect & Grow'].map((title, i) => (
+              <div key={i}>
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-blue-600 font-bold">{i + 1}</span>
+                </div>
+                <h3 className="text-lg font-semibold mb-2">{title}</h3>
+                <p className="text-gray-600">
+                  {i === 0 && 'Begin with daily affirmations to set a positive mindset'}
+                  {i === 1 && 'Use Kanban boards and Eisenhower Matrix to prioritize'}
+                  {i === 2 && 'End with journaling to track progress and improvements'}
+                </p>
               </div>
-              <h3 className="text-lg font-semibold mb-2">Start Your Day</h3>
-              <p className="text-gray-600">Begin with daily affirmations to set a positive mindset</p>
-            </div>
-            <div className="text-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-blue-600 font-bold">2</span>
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Organize Tasks</h3>
-              <p className="text-gray-600">Use Kanban boards and Eisenhower Matrix to prioritize</p>
-            </div>
-            <div className="text-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-blue-600 font-bold">3</span>
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Reflect & Grow</h3>
-              <p className="text-gray-600">End with journaling to track progress and improvements</p>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* CTA Section */}
+        {/* CTA */}
         <div className="text-center bg-blue-600 text-white rounded-lg p-12">
-          <h2 className="text-3xl font-bold mb-4">
-            Ready to Transform Your Productivity?
-          </h2>
+          <h2 className="text-3xl font-bold mb-4">Ready to Transform Your Productivity?</h2>
           <p className="text-xl mb-8 opacity-90">
             Join thousands of users who have already improved their daily routines
           </p>
@@ -330,14 +334,13 @@ export default function KanbanJournalLanding() {
               setShowLogin(true);
               setIsLogin(false);
             }}
-            className="bg-white text-blue-600 px-8 py-3 rounded-md hover:bg-gray-100 transition duration-200 font-semibold"
+            className="bg-white text-blue-600 px-8 py-3 rounded-md hover:bg-gray-100 font-semibold"
           >
             Start Your Journey Today
           </button>
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="container mx-auto px-4 py-8 text-center text-gray-600">
         <p>&copy; 2025 Kanban Journal. Built for productivity and personal growth.</p>
       </footer>

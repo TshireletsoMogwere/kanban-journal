@@ -2,22 +2,24 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 
+const authRoutes = require("./routes/authRoutes");
+const tasks = require("./routes/tasks");
+const journals = require("./routes/journals");
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
 app.use(cors({
-  origin: "http://localhost:3000", // your React frontend
-  credentials: true
+  origin: "http://localhost:3000",
+  credentials: true,
 }));
 
 app.use(express.json());
 
-// Routes
-const authRoutes = require("./routes/authRoutes");
-app.use("/api", authRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/tasks", tasks);
+app.use("/api/journals", journals);
 
-// Start server
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });

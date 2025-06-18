@@ -1,31 +1,88 @@
 import React, { useEffect, useState } from "react";
-import TaskForm from '../components/TaskForm'
-import TaskColumn from '../components/TaskColumn'
-import EinsteinMatrix from '../components/EinsteinMatrix'
-import axios from "axios";
+import TaskForm from '../components/TaskForm';
+import TaskColumn from '../components/TaskColumn';
+import EinsteinMatrix from '../components/EinsteinMatrix';
 
 
 export default function TaskBoard() {
   const [tasks, setTasks] = useState([]);
-
-  useEffect(() => {
-    axios.get("http://localhost:5000/api/tasks").then((res) => setTasks(res.data));
-  }, []);
-
-  const addTask = async (task) => {
-    const res = await axios.post("http://localhost:5000/api/tasks", task);
-    setTasks([...tasks, res.data]);
+useEffect(() => {
+  const fetchTasks = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/tasks");
+      const data = await res.json();
+      setTasks(data);
+      console.log("Tasks fetched:", data);
+    } catch (err) {
+      console.error("Fetch error:", err.message);
+    }
   };
 
-  const updateTask = async (id, updates) => {
-    const res = await axios.put(`http://localhost:5000/api/tasks/${id}`, updates);
-    setTasks(tasks.map((task) => (task.id === id ? res.data : task)));
-  };
+  fetchTasks();
+}, []);
 
-  const deleteTask = async (id) => {
-    await axios.delete(`http://localhost:5000/api/tasks/${id}`);
-    setTasks(tasks.filter((task) => task.id !== id));
-  };
+const addTask = async (task) => {
+  try {
+    const res = await fetch("http://localhost:5000/api/tasks", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(task),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Failed to add task");
+    }
+
+    const data = await res.json();
+    setTasks(prevTasks => [...prevTasks, data]);
+  } catch (err) {
+    console.error("Add task error:", err.message);
+  }
+};
+
+
+
+const updateTask = async (id, updates) => {
+  try {
+    const res = await fetch(`http://localhost:5000/api/tasks/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updates),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Failed to update task");
+    }
+
+    const data = await res.json();
+    setTasks(prevTasks => prevTasks.map(task => (task.id === id ? data : task)));
+  } catch (err) {
+    console.error("Update task error:", err.message);
+  }
+};
+
+const deleteTask = async (id) => {
+  try {
+    const res = await fetch(`http://localhost:5000/api/tasks/${id}`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Failed to delete task");
+    }
+
+    setTasks(prevTasks => prevTasks.filter(task => task.id !== id));
+  } catch (err) {
+    console.error("Delete task error:", err.message);
+  }
+};
 
   return (
     <div>
