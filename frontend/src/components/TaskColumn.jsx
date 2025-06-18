@@ -8,7 +8,9 @@ export default function TaskColumn({ title, tasks, updateTask, deleteTask }) {
         {tasks.map(task => (
           <div key={task.id} className="card bg-base-100 shadow p-4">
             <h3 className="font-bold">{task.title}</h3>
-            <p className="text-sm">Due: {task.due}</p>
+          
+    {/* 👇 ADD THIS LINE */}
+    <p className="text-sm text-gray-500">Due: {new Date(task.due_date).toLocaleDateString()}</p>
             <select
               value={task.status}
               onChange={(e) => updateTask(task.id, { status: e.target.value })}
