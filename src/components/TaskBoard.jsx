@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { collection, onSnapshot, query } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
-import { db, auth } from "../firebase";
-import { addDoc, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { getDatabase, ref, push, onValue, update, remove } from "firebase/database";
+import { auth } from "../firebase";
 import TaskForm from "../components/TaskForm";
 import TaskColumn from "./TaskColoumn";
+
+const db = getDatabase();
 
 const columnStyles = {
   todo: "bg-red-50 border-red-300 text-red-800",
@@ -15,70 +16,57 @@ const columnStyles = {
 export default function TaskBoard() {
   const [tasks, setTasks] = useState([]);
 
-  // Add Task to Firestore
+
   const addTask = async ({ title, due }) => {
     const user = auth.currentUser;
-    if (!user) {
-      console.error("User not logged in");
-      return;
-    }
+    if (!user) return;
 
-    const taskRef = collection(db, "users", user.uid, "tasks");
-    try {
-      await addDoc(taskRef, {
-        title,
-        due,
-        status: "todo",
-        createdAt: Date.now(),
-      });
-    } catch (err) {
-      console.error("Error adding task:", err.message);
-    }
+    const taskRef = ref(db, `users/${user.uid}/tasks`);
+    await push(taskRef, {
+      title,
+      due,
+      status: "todo",
+      createdAt: Date.now(),
+    });
   };
 
-  // Update Task in Firestore
+ 
   const updateTask = async (taskId, updates) => {
     const user = auth.currentUser;
     if (!user) return;
-    const taskRef = doc(db, "users", user.uid, "tasks", taskId);
-    await updateDoc(taskRef, updates);
+
+    const taskRef = ref(db, `users/${user.uid}/tasks/${taskId}`);
+    await update(taskRef, updates);
   };
 
-  // Delete Task from Firestore
+ 
   const deleteTask = async (taskId) => {
     const user = auth.currentUser;
     if (!user) return;
-    const taskRef = doc(db, "users", user.uid, "tasks", taskId);
-    await deleteDoc(taskRef);
+
+    const taskRef = ref(db, `users/${user.uid}/tasks/${taskId}`);
+    await remove(taskRef);
   };
 
-  // Listen to real-time tasks
+ 
   useEffect(() => {
-    let unsubscribe;
+    let unsubscribeAuth;
 
-    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+    unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
-        const tasksRef = collection(db, "users", user.uid, "tasks");
-
-        unsubscribe = onSnapshot(
-          query(tasksRef),
-          (snapshot) => {
-            const fetchedTasks = snapshot.docs.map((doc) => ({
-              id: doc.id,
-              ...doc.data(),
-            }));
-            setTasks(fetchedTasks);
-          },
-          (error) => {
-            console.error("Error fetching tasks:", error.message);
-          }
-        );
+        const tasksRef = ref(db, `users/${user.uid}/tasks`);
+        onValue(tasksRef, (snapshot) => {
+          const data = snapshot.val();
+          const taskList = data
+            ? Object.entries(data).map(([id, value]) => ({ id, ...value }))
+            : [];
+          setTasks(taskList);
+        });
       }
     });
 
     return () => {
-      unsubscribeAuth();
-      if (unsubscribe) unsubscribe();
+      if (unsubscribeAuth) unsubscribeAuth();
     };
   }, []);
 
@@ -111,7 +99,13 @@ export default function TaskBoard() {
             )}
 
             <TaskColumn
-              title=""
+              title={
+                status === "todo"
+                  ? "To Do"
+                  : status === "inprogress"
+                  ? "In Progress"
+                  : "Completed"
+              }
               tasks={tasks.filter((t) => t.status === status)}
               updateTask={updateTask}
               deleteTask={deleteTask}

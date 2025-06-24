@@ -3,7 +3,7 @@ import { auth } from "../firebase";
 
 const db = getDatabase();
 
-export const addTaskToFirestore = async (task) => {
+export const addTaskToFirebase = async (task) => {
   const user = auth.currentUser;
   if (!user) throw new Error("User not logged in");
 
