@@ -1,0 +1,124 @@
+import React, { useEffect, useState } from "react";
+import { collection, onSnapshot, query } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+import { db, auth } from "../firebase";
+import { addDoc, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import TaskForm from "../components/TaskForm";
+import TaskColumn from "./TaskColoumn";
+
+const columnStyles = {
+  todo: "bg-red-50 border-red-300 text-red-800",
+  inprogress: "bg-yellow-50 border-yellow-300 text-yellow-800",
+  done: "bg-green-50 border-green-300 text-green-800",
+};
+
+export default function TaskBoard() {
+  const [tasks, setTasks] = useState([]);
+
+  // Add Task to Firestore
+  const addTask = async ({ title, due }) => {
+    const user = auth.currentUser;
+    if (!user) {
+      console.error("User not logged in");
+      return;
+    }
+
+    const taskRef = collection(db, "users", user.uid, "tasks");
+    try {
+      await addDoc(taskRef, {
+        title,
+        due,
+        status: "todo",
+        createdAt: Date.now(),
+      });
+    } catch (err) {
+      console.error("Error adding task:", err.message);
+    }
+  };
+
+  // Update Task in Firestore
+  const updateTask = async (taskId, updates) => {
+    const user = auth.currentUser;
+    if (!user) return;
+    const taskRef = doc(db, "users", user.uid, "tasks", taskId);
+    await updateDoc(taskRef, updates);
+  };
+
+  // Delete Task from Firestore
+  const deleteTask = async (taskId) => {
+    const user = auth.currentUser;
+    if (!user) return;
+    const taskRef = doc(db, "users", user.uid, "tasks", taskId);
+    await deleteDoc(taskRef);
+  };
+
+  // Listen to real-time tasks
+  useEffect(() => {
+    let unsubscribe;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const tasksRef = collection(db, "users", user.uid, "tasks");
+
+        unsubscribe = onSnapshot(
+          query(tasksRef),
+          (snapshot) => {
+            const fetchedTasks = snapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            }));
+            setTasks(fetchedTasks);
+          },
+          (error) => {
+            console.error("Error fetching tasks:", error.message);
+          }
+        );
+      }
+    });
+
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
+
+  return (
+    <div className="max-w-7xl mx-auto px-6 py-10">
+      <h1 className="text-center text-4xl font-extrabold text-indigo-900 mb-12 tracking-wide">
+        Kanban Journal
+      </h1>
+
+      <div className="max-w-lg mx-auto mb-10">
+        <TaskForm addTask={addTask} />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        {["todo", "inprogress", "done"].map((status) => (
+          <section
+            key={status}
+            className={`rounded-lg border p-6 shadow-sm ${columnStyles[status]}`}
+          >
+            <h2 className="text-2xl font-semibold mb-6 capitalize">
+              {status === "todo"
+                ? "To Do"
+                : status === "inprogress"
+                ? "In Progress"
+                : "Completed"}
+            </h2>
+
+            {tasks.filter((t) => t.status === status).length === 0 && (
+              <p className="text-gray-500 italic">No tasks here yet.</p>
+            )}
+
+            <TaskColumn
+              title=""
+              tasks={tasks.filter((t) => t.status === status)}
+              updateTask={updateTask}
+              deleteTask={deleteTask}
+            />
+          </section>
+        ))}
+      </div>
+    </div>
+  );
+}
