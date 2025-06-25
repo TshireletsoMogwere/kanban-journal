@@ -1,10 +1,9 @@
-
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBiL33zJEW93kYGfbAqHP49PM57-5R1Mxw",
+  apiKey: "AIzaSyBiL33zJEW93kYGfbAqHP49PM57-5R1Mxw",
   authDomain: "kanban-journal-51530.firebaseapp.com",
   projectId: "kanban-journal-51530",
   storageBucket: "kanban-journal-51530.firebasestorage.app",

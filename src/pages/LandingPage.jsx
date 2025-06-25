@@ -70,7 +70,7 @@ export default function KanbanJournalLanding() {
       <main className="container mx-auto px-4 py-12">
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-            Organize Your Life with
+            Organize Your Life with <br></br>
             <span className="text-blue-600 block">Kanban Journal</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">

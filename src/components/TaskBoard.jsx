@@ -1,20 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import {
-  getDatabase,
-  ref,
-  push,
-  onValue,
-  update,
-  remove,
-} from "firebase/database";
-import { useNavigate } from "react-router-dom"; 
-import { auth } from "../firebase";
+  collection,
+  addDoc,
+  onSnapshot,
+  updateDoc,
+  deleteDoc,
+  doc,
+  query,
+  serverTimestamp,
+} from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
+import { auth, db } from "../firebase";
 import TaskForm from "../components/TaskForm";
 import TaskColumn from "./TaskColoumn";
 import Button from "../components/Button";
-
-const db = getDatabase();
+import Journal from "./Journal";
 
 const columnStyles = {
   todo: "bg-red-50 border-red-300 text-red-800",
@@ -30,7 +31,7 @@ export default function TaskBoard() {
     try {
       await signOut(auth);
       console.log("User logged out");
-      navigate("/"); // 
+      navigate("/");
     } catch (error) {
       console.error("Logout failed:", error.message);
     }
@@ -40,12 +41,12 @@ export default function TaskBoard() {
     const user = auth.currentUser;
     if (!user) return;
 
-    const taskRef = ref(db, `users/${user.uid}/tasks`);
-    await push(taskRef, {
+    const taskRef = collection(db, "users", user.uid, "tasks");
+    await addDoc(taskRef, {
       title,
       due,
       status: "todo",
-      createdAt: Date.now(),
+      createdAt: serverTimestamp(),
     });
   };
 
@@ -53,33 +54,36 @@ export default function TaskBoard() {
     const user = auth.currentUser;
     if (!user) return;
 
-    const taskRef = ref(db, `users/${user.uid}/tasks/${taskId}`);
-    await update(taskRef, updates);
+    const taskRef = doc(db, "users", user.uid, "tasks", taskId);
+    await updateDoc(taskRef, updates);
   };
 
   const deleteTask = async (taskId) => {
     const user = auth.currentUser;
     if (!user) return;
 
-    const taskRef = ref(db, `users/${user.uid}/tasks/${taskId}`);
-    await remove(taskRef);
+    const taskRef = doc(db, "users", user.uid, "tasks", taskId);
+    await deleteDoc(taskRef);
   };
 
   useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        const tasksRef = ref(db, `users/${user.uid}/tasks`);
-        onValue(tasksRef, (snapshot) => {
-          const data = snapshot.val();
-          const taskList = data
-            ? Object.entries(data).map(([id, value]) => ({ id, ...value }))
-            : [];
-          setTasks(taskList);
+        const tasksRef = collection(db, "users", user.uid, "tasks");
+        const q = query(tasksRef);
+        const unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
+          const fetchedTasks = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setTasks(fetchedTasks);
         });
+
+        return () => unsubscribeSnapshot();
       }
     });
 
-    return () => unsubscribeAuth();
+    return () => unsubscribe();
   }, []);
 
   return (
@@ -127,6 +131,8 @@ export default function TaskBoard() {
           </section>
         ))}
       </div>
+
+      <Journal />
     </div>
   );
 }

@@ -1,51 +1,63 @@
 import React, { useEffect, useState } from "react";
-import { collection, addDoc, getDocs, serverTimestamp } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  query,
+  orderBy,
+  onSnapshot,
+  serverTimestamp,
+} from "firebase/firestore";
 import { auth, db } from "../firebase";
 
 export default function Journal() {
   const [entry, setEntry] = useState("");
   const [entries, setEntries] = useState([]);
 
-  const fetchEntries = async () => {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    try {
-      const journalRef = collection(db, "users", user.uid, "journal");
-      const snapshot = await getDocs(journalRef);
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      // Optional: sort by newest
-      data.sort((a, b) => b.createdAt?.seconds - a.createdAt?.seconds);
-      setEntries(data);
-    } catch (error) {
-      console.error("Error loading journal entries:", error);
-    }
-  };
-
   useEffect(() => {
-    fetchEntries();
+    // Listen for auth state changes
+    const unsubscribeAuth = auth.onAuthStateChanged((user) => {
+      if (!user) {
+        setEntries([]); // Clear entries if logged out
+        return;
+      }
+
+      // Reference user's journal collection with ordering
+      const journalRef = collection(db, "users", user.uid, "journal");
+      const q = query(journalRef, orderBy("createdAt", "desc"));
+
+      // Subscribe to realtime updates
+      const unsubscribeSnap = onSnapshot(
+        q,
+        (snapshot) => {
+          const data = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setEntries(data);
+        },
+        (error) => {
+          console.error("Error fetching journal entries:", error);
+        }
+      );
+
+      // Cleanup listener on unmount or auth change
+      return () => unsubscribeSnap();
+    });
+
+    return () => unsubscribeAuth();
   }, []);
 
   const handleSave = async () => {
     const user = auth.currentUser;
     if (!user || !entry.trim()) return;
 
-    const newEntry = {
-      content: entry,
-      createdAt: serverTimestamp(),
-    };
-
     try {
       const journalRef = collection(db, "users", user.uid, "journal");
-      const docRef = await addDoc(journalRef, newEntry);
-      setEntries((prev) => [
-        { id: docRef.id, ...newEntry, createdAt: new Date() },
-        ...prev,
-      ]);
-      setEntry("");
+      await addDoc(journalRef, {
+        content: entry.trim(),
+        createdAt: serverTimestamp(),
+      });
+      setEntry(""); // Clear textarea after save
     } catch (error) {
       console.error("Error saving journal entry:", error);
     }
@@ -60,12 +72,15 @@ export default function Journal() {
         value={entry}
         onChange={(e) => setEntry(e.target.value)}
         placeholder="Reflect on your day, growth, and areas to improve..."
-      ></textarea>
+      />
       <button className="btn btn-secondary mb-4" onClick={handleSave}>
         Save Entry
       </button>
 
       <div className="space-y-2">
+        {entries.length === 0 && (
+          <p className="text-gray-500 italic">No journal entries yet.</p>
+        )}
         {entries.map((e) => (
           <div key={e.id} className="border p-2 rounded">
             <p className="text-sm text-gray-500">

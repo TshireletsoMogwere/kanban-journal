@@ -1,16 +1,15 @@
-import { getDatabase, ref, push } from "firebase/database";
-import { auth } from "../firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { auth, db } from "../firebase";
 
-const db = getDatabase();
-
-export const addTaskToFirebase = async (task) => {
+export const addTaskToFirestore = async (task) => {
   const user = auth.currentUser;
   if (!user) throw new Error("User not logged in");
 
-  const taskRef = ref(db, `users/${user.uid}/tasks`);
-  const newTaskRef = await push(taskRef, {
+  const taskCollectionRef = collection(db, "users", user.uid, "tasks");
+  const docRef = await addDoc(taskCollectionRef, {
     ...task,
-    createdAt: Date.now(),
+    createdAt: serverTimestamp(),
   });
-  return newTaskRef.key; 
+
+  return docRef.id; // Firestore document ID
 };
