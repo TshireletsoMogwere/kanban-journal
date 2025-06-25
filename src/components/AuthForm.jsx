@@ -5,7 +5,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithPopup,
-  updateProfile
+  updateProfile,
 } from 'firebase/auth';
 
 export default function AuthForm({ isLogin, setIsLogin, onSuccess, onCancel }) {

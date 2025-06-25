@@ -1,9 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { onAuthStateChanged } from "firebase/auth";
-import { getDatabase, ref, push, onValue, update, remove } from "firebase/database";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import {
+  getDatabase,
+  ref,
+  push,
+  onValue,
+  update,
+  remove,
+} from "firebase/database";
+import { useNavigate } from "react-router-dom"; 
 import { auth } from "../firebase";
 import TaskForm from "../components/TaskForm";
 import TaskColumn from "./TaskColoumn";
+import Button from "../components/Button";
 
 const db = getDatabase();
 
@@ -15,7 +24,17 @@ const columnStyles = {
 
 export default function TaskBoard() {
   const [tasks, setTasks] = useState([]);
+  const navigate = useNavigate();
 
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      console.log("User logged out");
+      navigate("/"); // 
+    } catch (error) {
+      console.error("Logout failed:", error.message);
+    }
+  };
 
   const addTask = async ({ title, due }) => {
     const user = auth.currentUser;
@@ -30,7 +49,6 @@ export default function TaskBoard() {
     });
   };
 
- 
   const updateTask = async (taskId, updates) => {
     const user = auth.currentUser;
     if (!user) return;
@@ -39,7 +57,6 @@ export default function TaskBoard() {
     await update(taskRef, updates);
   };
 
- 
   const deleteTask = async (taskId) => {
     const user = auth.currentUser;
     if (!user) return;
@@ -48,11 +65,8 @@ export default function TaskBoard() {
     await remove(taskRef);
   };
 
- 
   useEffect(() => {
-    let unsubscribeAuth;
-
-    unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
         const tasksRef = ref(db, `users/${user.uid}/tasks`);
         onValue(tasksRef, (snapshot) => {
@@ -65,16 +79,22 @@ export default function TaskBoard() {
       }
     });
 
-    return () => {
-      if (unsubscribeAuth) unsubscribeAuth();
-    };
+    return () => unsubscribeAuth();
   }, []);
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-10">
-      <h1 className="text-center text-4xl font-extrabold text-indigo-900 mb-12 tracking-wide">
-        Kanban Journal
-      </h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-4xl font-extrabold text-indigo-900 tracking-wide">
+          Kanban Journal
+        </h1>
+        <Button
+          onClick={handleLogout}
+          className="bg-red-600 hover:bg-red-700 text-white"
+        >
+          Logout
+        </Button>
+      </div>
 
       <div className="max-w-lg mx-auto mb-10">
         <TaskForm addTask={addTask} />
@@ -94,22 +114,16 @@ export default function TaskBoard() {
                 : "Completed"}
             </h2>
 
-            {tasks.filter((t) => t.status === status).length === 0 && (
+            {tasks.filter((t) => t.status === status).length === 0 ? (
               <p className="text-gray-500 italic">No tasks here yet.</p>
+            ) : (
+              <TaskColumn
+                title=""
+                tasks={tasks.filter((t) => t.status === status)}
+                updateTask={updateTask}
+                deleteTask={deleteTask}
+              />
             )}
-
-            <TaskColumn
-              title={
-                status === "todo"
-                  ? "To Do"
-                  : status === "inprogress"
-                  ? "In Progress"
-                  : "Completed"
-              }
-              tasks={tasks.filter((t) => t.status === status)}
-              updateTask={updateTask}
-              deleteTask={deleteTask}
-            />
           </section>
         ))}
       </div>
