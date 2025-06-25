@@ -11,6 +11,7 @@ import {
   orderBy,
 } from "firebase/firestore";
 import { auth, db } from "../firebase";
+import { Pencil,Trash } from "lucide-react";
 
 export default function Journal() {
   const [entry, setEntry] = useState("");
@@ -148,14 +149,18 @@ export default function Journal() {
                 className="btn btn-sm btn-info"
                 title="Edit entry"
               >
+                <Pencil className="w-4 h-4"
                 Edit
+                />
               </button>
               <button
                 onClick={() => handleDelete(e.id)}
                 className="btn btn-sm btn-error"
                 title="Delete entry"
               >
+                <Trash className="w-4 h-4"
                 Delete
+                />
               </button>
             </div>
           </div>

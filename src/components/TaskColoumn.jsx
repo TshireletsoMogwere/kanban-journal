@@ -1,4 +1,4 @@
-import React from "react";
+import { Trash } from "lucide-react";
 
 export default function TaskColumn({ title, tasks, updateTask, deleteTask }) {
   return (
@@ -21,10 +21,13 @@ export default function TaskColumn({ title, tasks, updateTask, deleteTask }) {
               <option value="done">Completed</option>
             </select>
             <button
+            
               onClick={() => deleteTask(task.id)}
               className="btn btn-sm btn-error mt-2"
             >
+              <Trash className="w-4 h-4"
               Delete
+              />
             </button>
           </div>
         ))}

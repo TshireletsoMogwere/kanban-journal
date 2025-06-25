@@ -17,6 +17,8 @@ import TaskColumn from "./TaskColoumn";
 import Button from "../components/Button";
 import Journal from "./Journal";
 import LoadingSpinner from "./LoadingSpinner";
+import EinsteinMatrix from "./EinsteinMatrix";
+
 
 const columnStyles = {
   todo: "bg-red-50 border-red-300 text-red-800",
@@ -133,10 +135,18 @@ export default function TaskBoard() {
                 tasks={tasks.filter((t) => t.status === status)}
                 updateTask={updateTask}
                 deleteTask={deleteTask}
-              />
+                />
+              
+            
+              
             )}
+          
           </section>
         ))}
+      </div>
+
+      <div>
+        <EinsteinMatrix tasks={tasks}/>
       </div>
 
       <Journal />
