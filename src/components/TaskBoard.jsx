@@ -16,6 +16,7 @@ import TaskForm from "../components/TaskForm";
 import TaskColumn from "./TaskColoumn";
 import Button from "../components/Button";
 import Journal from "./Journal";
+import LoadingSpinner from "./LoadingSpinner";
 
 const columnStyles = {
   todo: "bg-red-50 border-red-300 text-red-800",
@@ -25,6 +26,7 @@ const columnStyles = {
 
 export default function TaskBoard() {
   const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true)
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -77,6 +79,7 @@ export default function TaskBoard() {
             ...doc.data(),
           }));
           setTasks(fetchedTasks);
+          setLoading(false)
         });
 
         return () => unsubscribeSnapshot();
@@ -85,6 +88,10 @@ export default function TaskBoard() {
 
     return () => unsubscribe();
   }, []);
+
+  if (loading) {
+    return <LoadingSpinner message="loading"/>
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-10">
