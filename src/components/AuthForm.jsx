@@ -7,6 +7,7 @@ import {
   signInWithPopup,
   updateProfile,
 } from 'firebase/auth';
+import { FcGoogle } from 'react-icons/fc'; // Using react-icons for the Google icon
 
 export default function AuthForm({ isLogin, setIsLogin, onSuccess, onCancel }) {
   const [formData, setFormData] = useState({
@@ -52,9 +53,8 @@ export default function AuthForm({ isLogin, setIsLogin, onSuccess, onCancel }) {
         onSuccess();
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        // Update display name
         await updateProfile(userCredential.user, { displayName: name });
-        setIsLogin(true); // Switch to login screen after signup
+        setIsLogin(true);
         setFormData({ email: '', password: '', confirmPassword: '', name: '' });
       }
     } catch (err) {
@@ -79,7 +79,7 @@ export default function AuthForm({ isLogin, setIsLogin, onSuccess, onCancel }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
+      <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
             {isLogin ? 'Welcome Back' : 'Join Kanban Journal'}
@@ -91,7 +91,7 @@ export default function AuthForm({ isLogin, setIsLogin, onSuccess, onCancel }) {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
               {error}
             </div>
           )}
@@ -171,9 +171,10 @@ export default function AuthForm({ isLogin, setIsLogin, onSuccess, onCancel }) {
 
         <button
           onClick={handleGoogleSignIn}
-          className="mt-4 w-full bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition duration-200"
+          className="mt-4 w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-50 transition duration-200"
           disabled={loading}
         >
+          <FcGoogle size={20} />
           {loading ? 'Signing in...' : 'Sign in with Google'}
         </button>
 

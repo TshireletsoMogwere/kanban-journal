@@ -11,13 +11,14 @@ import {
   orderBy,
 } from "firebase/firestore";
 import { auth, db } from "../firebase";
-import { Pencil,Trash } from "lucide-react";
+import { Pencil, Trash } from "lucide-react";
 
 export default function Journal() {
   const [entry, setEntry] = useState("");
   const [entries, setEntries] = useState([]);
   const [editId, setEditId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(""); // <-- error state
 
   useEffect(() => {
     const user = auth.currentUser;
@@ -46,8 +47,14 @@ export default function Journal() {
   }, []);
 
   const handleSave = async () => {
+    if (!entry.trim()) {
+      setError("Please fill in this field");
+      return;
+    }
+
+    setError("");
     const user = auth.currentUser;
-    if (!user || !entry.trim()) return;
+    if (!user) return;
 
     try {
       if (editId) {
@@ -73,6 +80,7 @@ export default function Journal() {
   const handleEdit = (id, content) => {
     setEntry(content);
     setEditId(id);
+    setError(""); // Clear error when editing
   };
 
   const handleDelete = async (id) => {
@@ -87,6 +95,7 @@ export default function Journal() {
       if (editId === id) {
         setEditId(null);
         setEntry("");
+        setError("");
       }
     } catch (error) {
       console.error("Error deleting journal entry:", error);
@@ -99,30 +108,40 @@ export default function Journal() {
     );
 
   return (
-    <div className="card bg-base-100 p-6 shadow-md rounded-lg">
-      <h2 className="text-2xl font-semibold mb-4">Daily Journal</h2>
-      <textarea
-        className="textarea textarea-bordered w-full mb-4"
-        rows={5}
-        value={entry}
-        onChange={(e) => setEntry(e.target.value)}
-        placeholder="Reflect on your day, growth, and areas to improve..."
-      />
-      <div className="flex space-x-3 mb-6">
-        <button className="btn btn-secondary" onClick={handleSave}>
-          {editId ? "Update Entry" : "Save Entry"}
-        </button>
-        {editId && (
-          <button
-            className="btn btn-outline"
-            onClick={() => {
-              setEntry("");
-              setEditId(null);
-            }}
-          >
-            Cancel
+    <>
+      <div className="card bg-base-100 p-6 mb-5 shadow-md rounded-lg">
+        <textarea
+          className={`textarea textarea-bordered border w-full mb-2 ${
+            error ? "border-red-500" : "border-black"
+          }`}
+          rows={5}
+          value={entry}
+          onChange={(e) => {
+            setEntry(e.target.value);
+            if (error) setError(""); // Clear error on typing
+          }}
+          placeholder="Reflect on your day, progress and growth"
+          aria-label="Journal entry"
+        />
+        {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
+
+        <div className="flex space-x-3 mb-6">
+          <button className="btn btn-secondary" onClick={handleSave}>
+            {editId ? "Update Entry" : "Save Entry"}
           </button>
-        )}
+          {editId && (
+            <button
+              className="btn btn-outline"
+              onClick={() => {
+                setEntry("");
+                setEditId(null);
+                setError("");
+              }}
+            >
+              Cancel
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="space-y-6">
@@ -149,23 +168,19 @@ export default function Journal() {
                 className="btn btn-sm btn-info"
                 title="Edit entry"
               >
-                <Pencil className="w-4 h-4"
-                Edit
-                />
+                <Pencil className="w-4 h-4" />
               </button>
               <button
                 onClick={() => handleDelete(e.id)}
                 className="btn btn-sm btn-error"
                 title="Delete entry"
               >
-                <Trash className="w-4 h-4"
-                Delete
-                />
+                <Trash className="w-4 h-4" />
               </button>
             </div>
           </div>
         ))}
       </div>
-    </div>
+    </>
   );
 }

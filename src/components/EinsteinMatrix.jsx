@@ -12,7 +12,7 @@ function categorize(task) {
   return {
     ...task,
     urgent: isUrgent,
-    important: true, 
+    important: true, // adjust if you plan to add logic for "important"
   };
 }
 
@@ -24,7 +24,11 @@ const categories = [
 ];
 
 export default function EinsteinMatrix({ tasks }) {
-  const categorized = tasks.map(categorize);
+  // Exclude tasks that are marked as "done"
+  const activeTasks = tasks.filter((task) => task.status !== "done");
+
+  // Categorize only active (non-completed) tasks
+  const categorized = activeTasks.map(categorize);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">

@@ -36,7 +36,7 @@ export default function TaskForm({ addTask }) {
         placeholder="Task Title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        className="input input-bordered"
+        className="input input-bordered rounded-xl border border-black text-center"
       />
       <input
         type="date"

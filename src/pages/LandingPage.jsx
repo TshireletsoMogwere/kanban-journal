@@ -112,28 +112,7 @@ export default function KanbanJournalLanding() {
           ))}
         </div>
 
-        {/* How it works */}
-        {/* <div className="bg-white rounded-lg shadow-lg p-8 mb-16">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
-            How Kanban Journal Works
-          </h2>
-          <div className="grid md:grid-cols-3 gap-8 text-center">
-            {['Start Your Day', 'Organize Tasks', 'Reflect & Grow'].map((title, i) => (
-              <div key={i}>
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-blue-600 font-bold">{i + 1}</span>
-                </div>
-                <h3 className="text-lg font-semibold mb-2">{title}</h3>
-                <p className="text-gray-600">
-                  {i === 0 && 'Begin with daily affirmations to set a positive mindset'}
-                  {i === 1 && 'Use Kanban boards and Eisenhower Matrix to prioritize'}
-                  {i === 2 && 'End with journaling to track progress and improvements'}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div> */}
-
+     
         {/* CTA */}
         <div className="text-center bg-blue-600 text-white rounded-lg p-12">
           <h2 className="text-3xl font-bold mb-4">
