@@ -20,6 +20,7 @@ import Button from "../components/Button";
 import Journal from "../components/Journal";
 import LoadingSpinner from "../components/LoadingSpinner";
 import EinsteinMatrix from "../components/EinsteinMatrix";
+import Affirmation from "./Affirmation";
 
 import { columnConfig } from "../config/columnConfig";
 
@@ -161,6 +162,10 @@ export default function TaskBoard() {
           </div>
         </div>
       </header>
+
+      <div>
+        <Affirmation/>
+      </div>
 
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         {/* Add Task */}
