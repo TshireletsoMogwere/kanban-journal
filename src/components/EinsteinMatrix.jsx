@@ -1,19 +1,16 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 function categorize(task) {
   const today = new Date();
   const dueDate = task.due ? new Date(task.due) : null;
 
-  const isUrgent =
-    dueDate instanceof Date && !isNaN(dueDate)
-      ? (dueDate - today) / (1000 * 60 * 60 * 24) <= 1
-      : false;
+  if (!dueDate || isNaN(dueDate)) return { ...task, urgent: false, important: false };
 
-  return {
-    ...task,
-    urgent: isUrgent,
-    important: true, // adjust if you plan to add logic for "important"
-  };
+  const diffDays = (dueDate - today) / (1000 * 60 * 60 * 24);
+  const urgent = diffDays <= 5;       
+  const important = diffDays <= 14;     
+
+  return { ...task, urgent, important };
 }
 
 const categories = [
@@ -24,10 +21,18 @@ const categories = [
 ];
 
 export default function EinsteinMatrix({ tasks }) {
-  // Exclude tasks that are marked as "done"
-  const activeTasks = tasks.filter((task) => task.status !== "done");
+  // State that changes every minute to trigger re-render
+  const [tick, setTick] = useState(Date.now());
 
-  // Categorize only active (non-completed) tasks
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTick(Date.now());
+    }, 60 * 1000); // every 1 minute
+
+    return () => clearInterval(interval);
+  }, []);
+console.log(tick);
+  const activeTasks = tasks.filter((task) => task.status !== "done");
   const categorized = activeTasks.map(categorize);
 
   return (
