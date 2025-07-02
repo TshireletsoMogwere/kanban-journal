@@ -109,9 +109,9 @@ export default function Journal() {
 
   return (
     <>
-      <div className="card bg-base-100 p-6 mb-5 shadow-md rounded-lg">
+      <div className="space-y-4">
         <textarea
-          className={`textarea textarea-bordered border w-full mb-2 ${
+          className={`w-full h-32 p-3 border border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
             error ? "border-red-500" : "border-black"
           }`}
           rows={5}

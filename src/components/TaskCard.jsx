@@ -1,33 +1,57 @@
 import React, { useState } from "react";
-import { Trash, Pencil, ChevronRight, ArrowRight, Check, GripVertical } from "lucide-react";
+import { Trash, Pencil, GripVertical } from "lucide-react";
 
 function TaskCard({ task, updateTask, deleteTask }) {
   const [isDragging, setIsDragging] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedTitle, setEditedTitle] = useState(task.title);
-  const [editedDue, setEditedDue] = useState(task.due ? task.due.split("T")[0] : "");
 
+  // Initialize edited title and due date
+  const [editedTitle, setEditedTitle] = useState(task.title || "");
+
+  // Parse Firestore Timestamp or Date string safely, format to "yyyy-mm-dd" for <input type="date" />
+  const initialDue = (() => {
+    try {
+      const rawDate = task.due?.toDate ? task.due.toDate() : new Date(task.due);
+      return isNaN(rawDate.getTime()) ? "" : rawDate.toISOString().split("T")[0];
+    } catch {
+      return "";
+    }
+  })();
+  const [editedDue, setEditedDue] = useState(initialDue);
+
+  // Drag handlers (optional)
   const handleDragStart = (e) => {
     setIsDragging(true);
     e.dataTransfer.setData("text/plain", JSON.stringify(task));
   };
-
   const handleDragEnd = () => setIsDragging(false);
 
+  // Save edits and notify parent
   const handleSave = () => {
-    // Save both title and due date (due date as ISO string or null if empty)
     updateTask(task.id, {
       title: editedTitle.trim(),
-      due: editedDue ? new Date(editedDue).toISOString() : null,
+      due: editedDue ? editedDue : null, // pass ISO string or null
+      // IMPORTANT: Convert editedDue to Firestore Timestamp in updateTask if using Firestore!
     });
     setIsEditing(false);
   };
 
+  // Cancel edits and reset state
   const handleCancel = () => {
     setIsEditing(false);
-    setEditedTitle(task.title);
-    setEditedDue(task.due ? task.due.split("T")[0] : "");
+    setEditedTitle(task.title || "");
+    setEditedDue(initialDue);
   };
+
+  // Display date for reading (parse Firestore Timestamp if needed)
+  const dueDate = (() => {
+    try {
+      const d = task.due?.toDate ? task.due.toDate() : new Date(task.due);
+      return isNaN(d.getTime()) ? null : d;
+    } catch {
+      return null;
+    }
+  })();
 
   return (
     <div
@@ -67,17 +91,15 @@ function TaskCard({ task, updateTask, deleteTask }) {
               </button>
             </>
           )}
-     
-
-        <button
-          onClick={() => deleteTask(task.id)}
-          className="text-gray-400 hover:text-red-500 transition-colors ml-2"
-          aria-label={`Delete task ${task.title}`}
-        >
-          <Trash className="w-4 h-4" />
-        </button>
+          <button
+            onClick={() => deleteTask(task.id)}
+            className="text-gray-400 hover:text-red-500 transition-colors ml-2"
+            aria-label={`Delete task ${task.title}`}
+          >
+            <Trash className="w-4 h-4" />
+          </button>
+        </div>
       </div>
-         </div>
 
       <div className="mb-3">
         {isEditing ? (
@@ -89,9 +111,9 @@ function TaskCard({ task, updateTask, deleteTask }) {
             aria-label="Edit due date"
           />
         ) : (
-          task.due && (
+          dueDate && (
             <p className="text-sm text-gray-500">
-              Due: {new Date(task.due).toLocaleDateString()}
+              Due: {dueDate.toLocaleDateString()}
             </p>
           )
         )}

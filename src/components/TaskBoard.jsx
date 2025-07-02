@@ -11,7 +11,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Bell, Target, Calendar, BarChart3, BookOpen, Plus, LogOut } from "lucide-react";
 
 import { auth, db } from "../firebase";
 import TaskForm from "../components/TaskForm";
@@ -101,46 +101,48 @@ export default function TaskBoard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <LoadingSpinner message="Loading your tasks..." />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-3">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100">
+      {/* Enhanced Header - keeping exact same structure */}
+      <header className="bg-white/80 backdrop-blur-md shadow-lg border-b border-gray-200/60 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            {/* Left Section: Logo + Text */}
+            {/* Left Section: Logo + Text - exact same structure */}
             <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
                 <CheckCircle className="text-white w-5 h-5" />
               </div>
               <div className="leading-tight">
-                <h1 className="hidden md:block text-2xl font-bold text-gray-900">
+                <h1 className="hidden md:block text-2xl font-bold bg-gradient-to-r from-blue-50 to-indigo-100 bg-clip-text ">
                   Kanban Journal
                 </h1>
-                <p className="text-m text-gray-500">
-                  {user?.email?.split("@")[0] || "User"} • {totalTasks} total
-                  tasks
+                <p className="text-sm text-gray-600">
+                  {user?.email?.split("@")[0] || "User"} • {totalTasks} total tasks
                 </p>
               </div>
             </div>
 
-            {/* Right Section: Logout Button */}
-            <div>
+            {/* Right Section: Logout Button - exact same structure */}
+            <div className="flex items-center space-x-3">
+              
+             
+
               <Button
                 onClick={handleLogout}
-                className="hidden md:inline-flex bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg transition-colors"
+                className="hidden md:inline-flex bg-blue-600 hover:blue-100 text-white px-5 py-2 rounded-lg transition-all duration-200 shadow-lg hover:blue-100"
               >
                 Logout
               </Button>
 
               <button
                 onClick={handleLogout}
-                className="md:hidden p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white"
+                className="md:hidden p-2 rounded-lg bg-blue-600 hover:from-blue-700 hover:to-purple-700 text-white transition-all"
                 title="Logout"
               >
                 <svg
@@ -163,17 +165,62 @@ export default function TaskBoard() {
         </div>
       </header>
 
+      {/* Your exact Affirmation component */}
       <div>
         <Affirmation/>
       </div>
 
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-        {/* Add Task */}
-        <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        {/* Quick Stats - just visual enhancement, using your existing data */}
+        <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-white/70 backdrop-blur-sm rounded-xl p-4 border border-gray-200/50 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Total Tasks</p>
+                <p className="text-2xl font-bold text-gray-900">{totalTasks}</p>
+              </div>
+              <Target className="h-8 w-8 text-blue-600" />
+            </div>
+          </div>
+          
+          <div className="bg-white/70 backdrop-blur-sm rounded-xl p-4 border border-gray-200/50 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">To Do</p>
+                <p className="text-2xl font-bold text-red-600">{getTasksByStatus("todo").length}</p>
+              </div>
+              <Calendar className="h-8 w-8 text-red-600" />
+            </div>
+          </div>
+          
+          <div className="bg-white/70 backdrop-blur-sm rounded-xl p-4 border border-gray-200/50 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">In Progress</p>
+                <p className="text-2xl font-bold text-yellow-600">{getTasksByStatus("in-progress").length}</p>
+              </div>
+              <BarChart3 className="h-8 w-8 text-yellow-600" />
+            </div>
+          </div>
+          
+          <div className="bg-white/70 backdrop-blur-sm rounded-xl p-4 border border-gray-200/50 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Completed</p>
+                <p className="text-2xl font-bold text-green-600">{getTasksByStatus("done").length}</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-green-600" />
+            </div>
+          </div>
+        </section>
+
+        {/* Add Task - exact same structure, just enhanced styling */}
+        <section className=" backdrop-blur-sm p-6 hover:shadow-md transition-shadow">
           <div className="max-w-2xl mx-auto text-center">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">
-              Add New Task
-            </h2>
+            <div className="flex items-center justify-center space-x-2 mb-2">
+              <Plus className="h-6 w-6 text-blue-600" />
+              <h2 className="text-xl font-semibold text-gray-800">Add New Task</h2>
+            </div>
             <p className="text-gray-500 mb-4">
               Create a task and drag it between columns
             </p>
@@ -181,38 +228,40 @@ export default function TaskBoard() {
           </div>
         </section>
 
-        {/* Task Columns */}
+        {/* Task Columns - exact same structure */}
         <section>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {Object.entries(columnConfig).map(([status, config]) => (
-              <TaskColumn
-                key={status}
-                title={config.title}
-                status={status}
-                tasks={getTasksByStatus(status)}
-                updateTask={updateTask}
-                deleteTask={deleteTask}
-              />
+              <div key={status} className="rounded-2xl shadow-sm border p-6 bg-white/70 backdrop-blur-sm ">
+                <TaskColumn
+                  title={config.title}
+                  status={status}
+                  tasks={getTasksByStatus(status)}
+                  updateTask={updateTask}
+                  deleteTask={deleteTask}
+                />
+              </div>
             ))}
           </div>
         </section>
 
-        {/* Priority Matrix & Journal */}
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">
-              Priority Matrix
-            </h2>
-            <p className="text-gray-500 mb-4">
-              Organize tasks by importance and urgency
-            </p>
+        {/* Priority Matrix & Journal - exact same structure */}
+       <section className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          <div className="lg:col-span-2 bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/50 p-6">
+            <div className="flex items-center space-x-2 mb-4">
+              <Target className="h-5 w-5 text-blue-600" />
+              <h2 className="text-xl font-semibold text-gray-800">Priority Matrix</h2>
+            </div>
+            <p className="text-gray-600 mb-6">Eisenhower Decision Matrix</p>
             <EinsteinMatrix tasks={tasks} />
           </div>
 
-          <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              Daily Journal
-            </h2>
+          <div className="lg:col-span-3 bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/50 p-6">
+            <div className="flex items-center space-x-2 mb-4">
+              <BookOpen className="h-5 w-5 text-blue-600" />
+              <h2 className="text-xl font-semibold text-gray-800">Daily Reflection</h2>
+            </div>
+            <p className="text-gray-600 mb-6">Capture your thoughts, insights, and progress</p>
             <Journal />
           </div>
         </section>

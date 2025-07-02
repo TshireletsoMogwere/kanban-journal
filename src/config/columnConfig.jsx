@@ -14,7 +14,7 @@ export const columnConfig = {
     title: "In Progress",
     icon: Zap,
     accent: "bg-indigo-600",
-    textColor: "text-indigo-700",
+    textColor: "text-blue-600",
     borderColor: "border-indigo-200",
     gradient: "from-indigo-50 to-blue-50",
     iconColor: "text-indigo-600",

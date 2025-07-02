@@ -34,27 +34,29 @@ export default function TaskColumn({ title, tasks, updateTask, deleteTask, statu
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`bg-gradient-to-b ${config.gradient} rounded-2xl border-2 p-6 transition-all duration-300 ${
-        isDragOver ? "border-dashed border-blue-400 bg-blue-50" : config.borderColor
+      className={`bg-white rounded-xl shadow-sm border border-gray-200 p-4 transition-colors ${
+        isDragOver ? "border-2 border-dashed border-blue-400" : ""
       }`}
       aria-label={`${config.title} tasks column`}
       role="list"
     >
-      <div className="flex items-center justify-between mb-6">
-        <h3 className={`text-xl font-bold ${config.textColor}`}>{title}</h3>
+      {/* Column header */}
+      <div className="flex items-center justify-between mb-4">
+        <h3 className={`font-semibold text-gray-800 ${config.textColor}`}>{title}</h3>
+        <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
+          {tasks.length}
+        </span>
       </div>
 
-      <div className="space-y-4 min-h-[200px]">
+      {/* Tasks List */}
+      <div className="space-y-3 min-h-[60px]">
         {tasks.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center py-12">
-            <p className="text-gray-500 font-medium mb-2">No tasks yet</p>
-            <p className="text-sm text-gray-400">
-              {status === "todo"
-                ? "Add your first task to get started"
-                : status === "inprogress"
-                ? "Drag tasks here or click the arrow"
-                : "Completed tasks will appear here"}
-            </p>
+          <div className="text-sm text-gray-400 italic text-center py-8">
+            {status === "todo"
+              ? "No tasks yet — add one to get started"
+              : status === "in-progress"
+              ? "Drag tasks here to begin"
+              : ""}
           </div>
         ) : (
           tasks.map((task) => (
