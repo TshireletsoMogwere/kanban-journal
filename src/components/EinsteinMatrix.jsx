@@ -76,7 +76,7 @@ export default function EinsteinMatrix({ tasks }) {
   }, [activeTasks, tick]);
 
   return (
-    <div className="grid grid-cols-2 gap-2 mt-4">
+    <div className="grid grid-cols-2 gap-2 mt-4 ">
       <span style={{ display: "none" }}>{tick}</span> {/* ensures re-render */}
 
       {quadrantConfig.map(({ label, note, bg, border, text, subtext }) => {
@@ -88,14 +88,15 @@ export default function EinsteinMatrix({ tasks }) {
         });
 
         return (
-          <div key={label} className={`${bg} ${border} rounded-lg p-3 border`}>
+          
+          <div key={label} className={`${bg} ${border} rounded-lg p-3 border max-h-24 overflow-y-auto `}>
             <h4 className={`text-xs font-medium mb-2 ${text}`}>{label}</h4>
             <div className={`text-xs mb-2 ${subtext}`}>{note}</div>
 
             {filtered.length === 0 ? (
               <p className="text-xs text-gray-400 italic">No tasks here</p>
             ) : (
-              <ul className="text-xs list-disc list-inside space-y-1">
+              <ul className="text-xs list-disc list-inside space-y-1 ">
                 {filtered.map((task) => (
                   <li key={task.id} className="text-gray-700">
                     {task.title}

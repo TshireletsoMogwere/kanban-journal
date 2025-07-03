@@ -34,7 +34,7 @@ export default function TaskColumn({ title, tasks, updateTask, deleteTask, statu
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`bg-white rounded-xl shadow-sm border border-gray-200 p-4 transition-colors ${
+      className={`bg-white p-4 transition-colors ${
         isDragOver ? "border-2 border-dashed border-blue-400" : ""
       }`}
       aria-label={`${config.title} tasks column`}
@@ -49,7 +49,7 @@ export default function TaskColumn({ title, tasks, updateTask, deleteTask, statu
       </div>
 
       {/* Tasks List */}
-      <div className="space-y-3 min-h-[60px]">
+      <div className="space-y-3 max-h-[300px] overflow-y-auto">
         {tasks.length === 0 ? (
           <div className="text-sm text-gray-400 italic text-center py-8">
             {status === "todo"

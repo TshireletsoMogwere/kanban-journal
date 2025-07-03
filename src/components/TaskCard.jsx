@@ -31,7 +31,7 @@ function TaskCard({ task, updateTask, deleteTask }) {
     updateTask(task.id, {
       title: editedTitle.trim(),
       due: editedDue ? editedDue : null, // pass ISO string or null
-      // IMPORTANT: Convert editedDue to Firestore Timestamp in updateTask if using Firestore!
+      
     });
     setIsEditing(false);
   };
@@ -58,7 +58,7 @@ function TaskCard({ task, updateTask, deleteTask }) {
       draggable
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      className={`bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-move ${
+      className={`h-26 bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-move ${
         isDragging ? "opacity-50 rotate-2" : ""
       }`}
     >
@@ -70,7 +70,7 @@ function TaskCard({ task, updateTask, deleteTask }) {
               type="text"
               value={editedTitle}
               onChange={(e) => setEditedTitle(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
+              className="  px-2 py-1 text-sm w-full"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleSave();
@@ -112,7 +112,7 @@ function TaskCard({ task, updateTask, deleteTask }) {
           />
         ) : (
           dueDate && (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm  text-gray-500">
               Due: {dueDate.toLocaleDateString()}
             </p>
           )

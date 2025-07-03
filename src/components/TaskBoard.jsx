@@ -28,6 +28,8 @@ export default function TaskBoard() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -215,18 +217,16 @@ export default function TaskBoard() {
         </section>
 
         {/* Add Task - exact same structure, just enhanced styling */}
-        <section className=" backdrop-blur-sm p-6 hover:shadow-md transition-shadow">
-          <div className="max-w-2xl mx-auto text-center">
-            <div className="flex items-center justify-center space-x-2 mb-2">
-              <Plus className="h-6 w-6 text-blue-600" />
-              <h2 className="text-xl font-semibold text-gray-800">Add New Task</h2>
-            </div>
-            <p className="text-gray-500 mb-4">
-              Create a task and drag it between columns
-            </p>
-            <TaskForm addTask={addTask} />
-          </div>
-        </section>
+       <section className="text-center">
+  <button
+    onClick={() => setShowModal(true)}
+    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition"
+  >
+    <Plus className="h-5 w-5 mr-2" />
+    Add Task
+  </button>
+</section>
+
 
         {/* Task Columns - exact same structure */}
         <section>
@@ -253,7 +253,7 @@ export default function TaskBoard() {
               <h2 className="text-xl font-semibold text-gray-800">Priority Matrix</h2>
             </div>
             <p className="text-gray-600 mb-6">Eisenhower Decision Matrix</p>
-            <EinsteinMatrix tasks={tasks} />
+            <EinsteinMatrix tasks={tasks}/>
           </div>
 
           <div className="lg:col-span-3 bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/50 p-6">
@@ -266,6 +266,27 @@ export default function TaskBoard() {
           </div>
         </section>
       </main>
+      {showModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative">
+      <button
+        className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
+        onClick={() => setShowModal(false)}
+      >
+        ×
+      </button>
+      <h2 className="text-xl font-bold mb-4 text-gray-800">Add New Task</h2>
+      <TaskForm
+        addTask={async (data) => {
+          await addTask(data);
+          setShowModal(false); // Close modal after submit
+        }}
+      />
     </div>
+  </div>
+)}
+
+    </div>
+    
   );
 }
